@@ -4,6 +4,6 @@ RUN apt-get update && apt-get -y --force-yes install gcc g++ gcc-multilib g++-mu
 WORKDIR /code
 ENV IS_DOCKER=true
 CMD ./build.sh --target=windows-x86 && \
-    # ./build.sh --target=windows-x86_64 && \
+    ./build.sh --target=windows-x86_64 && \
     ./build.sh --target=linux-x86 && \
 	./build.sh --target=linux-x86_64

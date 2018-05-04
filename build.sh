@@ -62,6 +62,7 @@ if [ "x$TARGET" != 'x' ]; then
         CC_FLAGS="$CC_FLAGS -m64"
         CXX_FLAGS="$CXX_FLAGS -m64"
         LINKER_FLAGS="$LINKER_FLAGS -m64"
+        OUTPUT_NAME="$OUTPUT_NAME""64"
     fi
 
     if [ "$OS" = "windows" ]; then
@@ -72,7 +73,8 @@ if [ "x$TARGET" != 'x' ]; then
         OUTPUT_PREFIX=""
         OUTPUT_SUFFIX=".dll"
         if [ "$ARCH" = "x86_64" ]; then
-            OUTPUT_NAME="$OUTPUT_NAME""64"
+            CC="x86_64-w64-mingw32-gcc"
+            CXX="x86_64-w64-mingw32-g++"
         fi
     fi
 
@@ -87,7 +89,6 @@ if [ "x$TARGET" != 'x' ]; then
         CXX_FLAGS="$CXX_FLAGS -fPIC"
         JNI_MD="mac"
         OUTPUT_SUFFIX=".dylib"
-        OUTPUT_NAME="$OUTPUT_NAME""64"
     fi
 
     if [ "$BUILD" = "debug" ]; then
