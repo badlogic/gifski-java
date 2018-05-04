@@ -4,3 +4,5 @@
 .project
 .settings/
 cmake-build-debug/
+.DS_STORE
+tmp/
