@@ -5,75 +5,50 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 public class Gifski {
-	static public final int GIFSKI_OK = 0;
-	/** one of input arguments was NULL */
-	static public final int GIFSKI_NULL_ARG = 1;
-	/** a one-time function was called twice, or functions were called in wrong order */
-	static public final int GIFSKI_INVALID_STATE = 2;
-	/** internal error related to palette quantization */
-	static public final int GIFSKI_QUANT = 3;
-	/** internal error related to gif composing */
-	static public final int GIFSKI_GIF = 4;
-	/** internal error related to multithreading */
-	static public final int GIFSKI_THREAD_LOST = 5;
-	/** I/O error: file or directory not found */
-	static public final int GIFSKI_NOT_FOUND = 6;
-	/** I/O error: permission denied */
-	static public final int GIFSKI_PERMISSION_DENIED = 7;
-	/** I/O error: file already exists */
-	static public final int GIFSKI_ALREADY_EXISTS = 8;
-	/** invalid arguments passed to function */
-	static public final int GIFSKI_INVALID_INPUT = 9;
-	/** misc I/O error */
-	static public final int GIFSKI_TIMED_OUT = 10;
-	/** misc I/O error */
-	static public final int GIFSKI_WRITE_ZERO = 11;
-	/** misc I/O error */
-	static public final int GIFSKI_INTERRUPTED = 12;
-	/** misc I/O error */
-	static public final int GIFSKI_UNEXPECTED_EOF = 13;
-	/** progress callback returned 0, writing aborted */
-	static public final int ABORTED = 14;
-	/** should not happen, file a bug */
-	static public final int GIFSKI_OTHER = 15;
-
 	private final long handle;
 
 	public Gifski (GifskiSettings settings) {
 		handle = _newGifski(settings.width, settings.height, settings.quality, settings.once, settings.fast);
-		if (handle == 0) throw new RuntimeException("Unableto create Gifski instance.");
+		if (handle == 0) throw new RuntimeException("Unable to create Gifski instance.");
 	}
 
-	public int addFrameRGBA (int index, int width, int height, byte[] pixels, short delay) {
-		return _addFrameRGBA(handle, index, width, height, pixels, delay);
+	public Result addFrameRGBA (int index, int width, int height, byte[] pixels, short delay) {
+		return result(_addFrameRGBA(handle, index, width, height, pixels, delay));
 	}
 
-	public int addFrameRGBA (int index, int width, int height, ByteBuffer pixels, short delay) {
-		return _addFrameRGBA(handle, index, width, height, pixels, delay);
+	public Result addFrameRGBA (int index, int width, int height, ByteBuffer pixels, short delay) {
+		return result(_addFrameRGBA(handle, index, width, height, pixels, delay));
 	}
 
-	public int endAddingFrames () {
-		return _endAddingFrames(handle);
+	public Result endAddingFrames () {
+		return result(_endAddingFrames(handle));
 	}
 
-	public int write (String outputFile) {
+	public Result write (String outputFile) {
 		try {
-			return _write(handle, outputFile.getBytes("utf-8"));
+			return result(_write(handle, outputFile.getBytes("utf-8")));
 		} catch (UnsupportedEncodingException ex) {
 			throw new RuntimeException(ex); // Should never happen.
 		}
 	}
 
+	private Result result (int code) {
+		if (code < 0 || code >= Result.values.length) return Result.OTHER;
+		return Result.values[code];
+	}
+
+	/** Starts a thread that calls {@link #write(String)} and then {@link #drop()}. */
 	public void startWriteThread (final String outputFile) {
-		Thread thread = new Thread(new Runnable() {
-			@Override
+		new Thread("GifskiWrite") {
 			public void run () {
-				int error = write(outputFile);
-				if (error != GIFSKI_OK) throw new RuntimeException("Gifski error: " + error);
+				try {
+					Result result = write(outputFile);
+					if (result != Result.OK) throw new RuntimeException("Gifski error: " + result);
+				} finally {
+					drop();
+				}
 			}
-		});
-		thread.setDaemon(true);
-		thread.start();
+		}.start();
 	}
 
 	public void drop () {
@@ -91,4 +66,43 @@ public class Gifski {
 	static private native int _write (long handle, byte[] fileName);
 
 	static private native void _drop (long handle);
+
+	static public enum Result {
+		/** Success. */
+		OK,
+		/** One of input arguments was NULL. */
+		NULL_ARG,
+		/** A one-time function was called twice, or functions were called in wrong order. */
+		INVALID_STATE,
+		/** Internal error related to palette quantization. */
+		QUANT,
+		/** Internal error related to gif composing. */
+		GIF,
+		/** Internal error related to multithreading. */
+		THREAD_LOST,
+		/** I/O error: file or directory not found. */
+		NOT_FOUND,
+		/** I/O error: permission denied. */
+		PERMISSION_DENIED,
+		/** I/O error: file already exists. */
+		ALREADY_EXISTS,
+		/** Invalid arguments passed to function. */
+		INVALID_INPUT,
+		/** Misc I/O error. */
+		TIMED_OUT,
+		/** Misc I/O error. */
+		WRITE_ZERO,
+		/** Misc I/O error. */
+		INTERRUPTED,
+		/** Misc I/O error. */
+		UNEXPECTED_EOF,
+		/** Progress callback returned 0, writing aborted. */
+		ABORTED,
+		/** Should not happen, file a bug. */
+		OTHER,
+		/** Invalid result, file a bug. */
+		INVALID;
+
+		static final Result[] values = values();
+	}
 }
