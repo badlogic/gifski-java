@@ -5,25 +5,51 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 public class Gifski {
+	static {
+		new SharedLibraryLoader().load("gifski-java");
+	}
+
 	private final long handle;
+	private final int width, height, quality;
+	private final boolean once, fast;
+
+	Result writeResult;
+	private Thread writeThread;
 
 	public Gifski (GifskiSettings settings) {
-		handle = _newGifski(settings.width, settings.height, settings.quality, settings.once, settings.fast);
+		if (settings.width < 0) throw new IllegalArgumentException("width must be >= 0: " + settings.width);
+		if (settings.height < 0) throw new IllegalArgumentException("height must be >= 0: " + settings.height);
+		if (settings.quality < 1 || settings.quality > 100)
+			throw new IllegalArgumentException("quality must be between 1 and 100: " + settings.quality);
+		this.width = settings.width;
+		this.height = settings.height;
+		this.quality = settings.quality;
+		this.once = settings.once;
+		this.fast = settings.fast;
+
+		handle = _newGifski(width, height, quality, once, fast);
 		if (handle == 0) throw new RuntimeException("Unable to create Gifski instance.");
 	}
 
+	/** @param pixels An array with width * height * 4 bytes. The array contents is copied. */
 	public Result addFrameRGBA (int index, int width, int height, byte[] pixels, short delay) {
 		return result(_addFrameRGBA(handle, index, width, height, pixels, delay));
 	}
 
+	/** @param pixels A buffer with width * height * 4 bytes. The buffer position is ignored, the data must start at position 0.
+	 *           The buffer contents is copied. */
 	public Result addFrameRGBA (int index, int width, int height, ByteBuffer pixels, short delay) {
+		if (pixels.capacity() < width * height * 4)
+			throw new IllegalArgumentException("pixels must have " + width + " * " + height + " * 4 capacity: " + pixels.capacity());
 		return result(_addFrameRGBA(handle, index, width, height, pixels, delay));
 	}
 
+	/** Call after adding frames to allow {@link #write(String)} to return. */
 	public Result endAddingFrames () {
 		return result(_endAddingFrames(handle));
 	}
 
+	/** Waits for frames to be added until {@link #endAddingFrames()} is called. */
 	public Result write (String outputFile) {
 		try {
 			return result(_write(handle, outputFile.getBytes("utf-8")));
@@ -37,22 +63,35 @@ public class Gifski {
 		return Result.values[code];
 	}
 
-	/** Starts a thread that calls {@link #write(String)} and then {@link #drop()}. */
-	public void startWriteThread (final String outputFile) {
-		new Thread("GifskiWrite") {
-			public void run () {
-				try {
-					Result result = write(outputFile);
-					if (result != Result.OK) throw new RuntimeException("Gifski error: " + result);
-				} finally {
-					drop();
-				}
-			}
-		}.start();
-	}
-
+	/** Releases all memory. This instance must not be used afterward. */
 	public void drop () {
 		_drop(handle);
+	}
+
+	/** Starts a thread that calls {@link #write(String)} and then {@link #drop()}. */
+	public void start (final String outputFile) {
+		if (writeThread != null) throw new IllegalStateException("Write thread is already running.");
+		writeThread = new Thread("GifskiWrite") {
+			public void run () {
+				writeResult = write(outputFile);
+				drop();
+			}
+		};
+		writeThread.start();
+	}
+
+	/** Calls {@link #endAddingFrames()}, waits for the write thread to stop, and returns the result of the {@link #write(String)}.
+	 * Note that because the write thread calls {@link #drop()}, this Gifski instance can no longer be used after calling this
+	 * method. */
+	public Result end () {
+		if (writeThread == null) throw new IllegalStateException("Write thread is not running.");
+		endAddingFrames();
+		try {
+			writeThread.join();
+		} catch (InterruptedException ignored) {
+		}
+		writeThread = null;
+		return writeResult;
 	}
 
 	static private native long _newGifski (int width, int height, int quality, boolean once, boolean fast);
@@ -66,6 +105,26 @@ public class Gifski {
 	static private native int _write (long handle, byte[] fileName);
 
 	static private native void _drop (long handle);
+
+	public int getWidth () {
+		return width;
+	}
+
+	public int getHeight () {
+		return height;
+	}
+
+	public int getQuality () {
+		return quality;
+	}
+
+	public boolean getOnce () {
+		return once;
+	}
+
+	public boolean getFast () {
+		return fast;
+	}
 
 	static public enum Result {
 		/** Success. */

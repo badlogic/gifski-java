@@ -1,44 +1,32 @@
 
 package com.badlogicgames.gifski;
 
-import org.junit.Test;
-
-import com.badlogicgames.gifski.Gifski;
-import com.badlogicgames.gifski.GifskiSettings;
-
 public class GifskiTest {
-	static {
-		new SharedLibraryLoader().load("gifski-java");
-	}
-
-	@Test
-	public void testGifski () {
-		GifskiSettings settings = new GifskiSettings();
-		Gifski gifski = new Gifski(settings);
-		gifski.drop();
-	}
-
 	public static void main (String[] args) {
-		System.out.println("Starting Gifski");
+		int seconds = 2;
+		int frameCount = 50;
 
 		GifskiSettings settings = new GifskiSettings();
+		settings.width = 256;
+		settings.height = 256;
+		settings.quality = 100;
+		settings.once = false;
+		settings.fast = false;
+
 		Gifski gifski = new Gifski(settings);
-
-		gifski.startWriteThread("output.gif");
-
-		byte[] frame = new byte[256 * 256 * 4];
-		for (int j = 0; j < 50; j++) {
-			for (int i = 0; i < 256 * 256 * 4; i += 4) {
-				byte val = (byte)(j * (256 / 60f));
-				frame[i] = val;
-				frame[i + 1] = (byte)0x0;
-				frame[i + 2] = val;
-				frame[i + 3] = (byte)0xff;
+		gifski.start("output.gif");
+		short delay = (short)(seconds * 100 / frameCount);
+		byte[] pixels = new byte[settings.width * settings.height * 4];
+		for (int i = 0; i < frameCount; i++) {
+			for (int p = 0, n = pixels.length; p < n; p += 4) {
+				byte color = (byte)(i * 256f / frameCount);
+				pixels[p] = color;
+				pixels[p + 1] = 0;
+				pixels[p + 2] = color;
+				pixels[p + 3] = (byte)0xff;
 			}
-			gifski.addFrameRGBA(j, 256, 256, frame, (short)4);
+			gifski.addFrameRGBA(i, settings.width, settings.height, pixels, delay);
 		}
-		gifski.endAddingFrames();
-
-		System.out.println("Great success!");
+		gifski.end();
 	}
 }
