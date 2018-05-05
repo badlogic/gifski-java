@@ -1,16 +1,16 @@
 #!/bin/bash
 set -e
 
+export PATH=$PATH:~/.cargo/bin
+
 BUILD=debug
-CC=gcc
 CXX=g++
-CC_FLAGS="-c -Wall -O2 -mfpmath=sse -msse2 -fmessage-length=0 -std=c99"
-CXX_FLAGS="-c -Wall -O2 -mfpmath=sse -msse2 -fmessage-length=0 -std=c++11"
+CXX_FLAGS="-c -Wall"
 LINKER_FLAGS="-shared"
-LIBRARIES="-lm"
+LIBRARIES="-Ltmp -lm -lgifski"
 OUTPUT_DIR="src/main/resources/"
 OUTPUT_PREFIX="lib"
-OUTPUT_NAME="pngquant-java"
+OUTPUT_NAME="gifski-java"
 OUTPUT_SUFFIX=".so"
 
 function usage {
@@ -55,75 +55,70 @@ if [ "x$TARGET" != 'x' ]; then
     ARCH=${TARGET#*-}
 
     if [ "$ARCH" = "x86" ]; then
-        CC_FLAGS="$CC_FLAGS -m32"
         CXX_FLAGS="$CXX_FLAGS -m32"
         LINKER_FLAGS="$LINKER_FLAGS -m32"
     else
-        CC_FLAGS="$CC_FLAGS -m64"
         CXX_FLAGS="$CXX_FLAGS -m64"
         LINKER_FLAGS="$LINKER_FLAGS -m64"
         OUTPUT_NAME="$OUTPUT_NAME""64"
     fi
 
     if [ "$OS" = "windows" ]; then
-        CC="i686-w64-mingw32-gcc"
         CXX="i686-w64-mingw32-g++"
         LINKER_FLAGS="-Wl,--kill-at -static-libgcc -static-libstdc++ $LINKER_FLAGS"
         JNI_MD="win32"
+        LIBRARIES="$LIBRARIES -lwsock32 -lws2_32 -ldbghelp -luserenv"
         OUTPUT_PREFIX=""
         OUTPUT_SUFFIX=".dll"
         if [ "$ARCH" = "x86_64" ]; then
-            CC="x86_64-w64-mingw32-gcc"
             CXX="x86_64-w64-mingw32-g++"
+            RUST_TARGET="x86_64-pc-windows-gnu"
+        else
+            RUST_TARGET="i686-pc-windows-gnu"
         fi
     fi
 
     if [ "$OS" = "linux" ]; then
-        CC_FLAGS="$CC_FLAGS -fPIC"
         CXX_FLAGS="$CXX_FLAGS -fPIC"
         JNI_MD="linux"
+        if [ "$ARCH" = "x86_64" ]; then
+            RUST_TARGET="x86_64-unknown-linux-gnu"
+        else
+            RUST_TARGET="i686-unknown-linux-gnu"
+        fi
     fi
 
     if [ "$OS" = "macosx" ]; then
-        CC_FLAGS="$CC_FLAGS -fPIC"
         CXX_FLAGS="$CXX_FLAGS -fPIC"
         JNI_MD="mac"
         OUTPUT_SUFFIX=".dylib"
+        RUST_TARGET="x86_64-apple-darwin"
     fi
 
     if [ "$BUILD" = "debug" ]; then
-        CC_FLAGS="$CC_FLAGS -g"
         CXX_FLAGS="$CXX_FLAGS -g"
     else
-        CC_FLAGS="$CC_FLAGS -O2"
         CXX_FLAGS="$CXX_FLAGS -O2"
     fi
 fi
 
-# mvn compile
-# javah -cp target/classes -o jni/PngQuant.h com.badlogicgames.pngquant.PngQuant
 
-C_SOURCES="`find libimagequant -name *.c`"
-C_EXCLUDES="libimagequant/example.c libimagequant/org/pngquant/PngQuant.c"
 CXX_SOURCES=`find jni -name *.cpp`
-CXX_EXCLUDES=
-HEADERS="-Ijni -Ijni/headers -Ijni/headers/${JNI_MD} -Ilibimagequant"
+HEADERS="-Ijni -Ijni/jni-headers -Ijni/jni-headers/${JNI_MD}"
 
 rm -rf tmp
 mkdir -p tmp
 
-echo ""
 echo "--- Compiling for $TARGET, build type $BUILD"
+echo "------ Compiling Gifski Rust"
+cd jni/gifski-fork
+cargo build --target=$RUST_TARGET
+cp target/$RUST_TARGET/$BUILD/*.a ../../tmp | true
+cp target/$RUST_TARGET/$BUILD/*.lib ../../tmp | true
+cd ../..
 
-echo "--- Compiling C sources"
-for f in $C_SOURCES; do
-    if ! echo $C_EXCLUDES | grep -w "$f"> /dev/null; then
-        echo "$CC $CC_FLAGS $HEADERS -o tmp/`basename $f .c`.o"
-        $CC $CC_FLAGS $HEADERS "$f" -o tmp/`basename $f .c`.o
-    fi
-done
 
-echo "--- Compiling C++ sources"
+echo "------ Compiling C++ sources"
 echo $CXX_SOURCES;
 for f in $CXX_SOURCES; do
    echo "$CXX $CXX_FLAGS $HEADERS -o tmp/`basename $f .c`.o"
@@ -133,8 +128,8 @@ done
 echo "--- Linking"
 LINKER=$CXX
 OBJ_FILES=`find tmp -name *.o`
-echo "$LINKER $LINKER_FLAGS $LIBRARIES -o $OUTPUT_DIR$OUTPUT_PREFIX$OUTPUT_NAME$OUTPUT_SUFFIX $OBJ_FILES"
-$LINKER $LINKER_FLAGS $LIBRARIES -o "$OUTPUT_DIR$OUTPUT_PREFIX$OUTPUT_NAME$OUTPUT_SUFFIX" $OBJ_FILES
+echo "$LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o $OUTPUT_DIR$OUTPUT_PREFIX$OUTPUT_NAME$OUTPUT_SUFFIX"
+$LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o "$OUTPUT_DIR$OUTPUT_PREFIX$OUTPUT_NAME$OUTPUT_SUFFIX"
 
 echo "--- Clean up"
 rm -rf tmp
