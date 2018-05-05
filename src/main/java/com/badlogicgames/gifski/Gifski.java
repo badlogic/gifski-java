@@ -72,7 +72,7 @@ public class Gifski {
 		return _endAddingFrames(handle);
 	}
 
-	private int write (String fileName) {
+	int write (String fileName) {
 		try {
 			return _write(handle, fileName.getBytes("utf-8"));
 		} catch (UnsupportedEncodingException e) {
