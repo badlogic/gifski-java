@@ -5,59 +5,43 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 public class Gifski {
-	public static final int GIFSKI_OK = 0;
+	static public final int GIFSKI_OK = 0;
 	/** one of input arguments was NULL */
-	public static final int GIFSKI_NULL_ARG = 1;
+	static public final int GIFSKI_NULL_ARG = 1;
 	/** a one-time function was called twice, or functions were called in wrong order */
-	public static final int GIFSKI_INVALID_STATE = 2;
+	static public final int GIFSKI_INVALID_STATE = 2;
 	/** internal error related to palette quantization */
-	public static final int GIFSKI_QUANT = 3;
+	static public final int GIFSKI_QUANT = 3;
 	/** internal error related to gif composing */
-	public static final int GIFSKI_GIF = 4;
+	static public final int GIFSKI_GIF = 4;
 	/** internal error related to multithreading */
-	public static final int GIFSKI_THREAD_LOST = 5;
+	static public final int GIFSKI_THREAD_LOST = 5;
 	/** I/O error: file or directory not found */
-	public static final int GIFSKI_NOT_FOUND = 6;
+	static public final int GIFSKI_NOT_FOUND = 6;
 	/** I/O error: permission denied */
-	public static final int GIFSKI_PERMISSION_DENIED = 7;
+	static public final int GIFSKI_PERMISSION_DENIED = 7;
 	/** I/O error: file already exists */
-	public static final int GIFSKI_ALREADY_EXISTS = 8;
+	static public final int GIFSKI_ALREADY_EXISTS = 8;
 	/** invalid arguments passed to function */
-	public static final int GIFSKI_INVALID_INPUT = 9;
+	static public final int GIFSKI_INVALID_INPUT = 9;
 	/** misc I/O error */
-	public static final int GIFSKI_TIMED_OUT = 10;
+	static public final int GIFSKI_TIMED_OUT = 10;
 	/** misc I/O error */
-	public static final int GIFSKI_WRITE_ZERO = 11;
+	static public final int GIFSKI_WRITE_ZERO = 11;
 	/** misc I/O error */
-	public static final int GIFSKI_INTERRUPTED = 12;
+	static public final int GIFSKI_INTERRUPTED = 12;
 	/** misc I/O error */
-	public static final int GIFSKI_UNEXPECTED_EOF = 13;
+	static public final int GIFSKI_UNEXPECTED_EOF = 13;
 	/** progress callback returned 0, writing aborted */
-	public static final int ABORTED = 14;
+	static public final int ABORTED = 14;
 	/** should not happen, file a bug */
-	public static final int GIFSKI_OTHER = 15;
+	static public final int GIFSKI_OTHER = 15;
 
-	long handle;
-	Thread thread;
-
-	static {
-		new SharedLibraryLoader().load("gifski-java");
-	}
+	private final long handle;
 
 	public Gifski (GifskiSettings settings) {
 		handle = _newGifski(settings.width, settings.height, settings.quality, settings.once, settings.fast);
-		if (handle == 0) throw new RuntimeException("Couldn't create Gifski instance.");
-	}
-
-	public void start (final String outputFile) {
-		thread = new Thread(new Runnable() {
-			@Override
-			public void run () {
-				write(outputFile);
-			}
-		});
-		thread.setDaemon(true);
-		thread.start();
+		if (handle == 0) throw new RuntimeException("Unableto create Gifski instance.");
 	}
 
 	public int addFrameRGBA (int index, int width, int height, byte[] pixels, short delay) {
@@ -68,31 +52,43 @@ public class Gifski {
 		return _addFrameRGBA(handle, index, width, height, pixels, delay);
 	}
 
-	public int end () {
+	public int endAddingFrames () {
 		return _endAddingFrames(handle);
 	}
 
-	int write (String fileName) {
+	public int write (String outputFile) {
 		try {
-			return _write(handle, fileName.getBytes("utf-8"));
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("Couldn't get bytes of string. This should never happend.");
+			return _write(handle, outputFile.getBytes("utf-8"));
+		} catch (UnsupportedEncodingException ex) {
+			throw new RuntimeException(ex); // Should never happen.
 		}
 	}
 
-	public void dispose () {
+	public void startWriteThread (final String outputFile) {
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run () {
+				int error = write(outputFile);
+				if (error != GIFSKI_OK) throw new RuntimeException("Gifski error: " + error);
+			}
+		});
+		thread.setDaemon(true);
+		thread.start();
+	}
+
+	public void drop () {
 		_drop(handle);
 	}
 
-	private static native long _newGifski (int width, int height, int quality, boolean once, boolean fast);
+	static private native long _newGifski (int width, int height, int quality, boolean once, boolean fast);
 
-	private static native int _addFrameRGBA (long handle, int index, int width, int height, byte[] pixels, short delay);
+	static private native int _addFrameRGBA (long handle, int index, int width, int height, byte[] pixels, short delay);
 
-	private static native int _addFrameRGBA (long handle, int index, int width, int height, ByteBuffer pixels, short delay);
+	static private native int _addFrameRGBA (long handle, int index, int width, int height, ByteBuffer pixels, short delay);
 
-	private static native int _endAddingFrames (long handle);
+	static private native int _endAddingFrames (long handle);
 
-	private static native int _write (long handle, byte[] fileName);
+	static private native int _write (long handle, byte[] fileName);
 
-	private static native void _drop (long handle);
+	static private native void _drop (long handle);
 }

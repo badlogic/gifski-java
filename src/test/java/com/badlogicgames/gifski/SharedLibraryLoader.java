@@ -1,3 +1,4 @@
+
 package com.badlogicgames.gifski;
 
 import java.io.Closeable;

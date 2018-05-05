@@ -5,6 +5,6 @@ public class GifskiSettings {
 	public int width;
 	public int height;
 	public byte quality = 100;
-	public boolean once = false;
-	public boolean fast = false;
+	public boolean once;
+	public boolean fast;
 }
