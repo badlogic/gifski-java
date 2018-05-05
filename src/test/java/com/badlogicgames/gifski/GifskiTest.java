@@ -38,7 +38,6 @@ public class GifskiTest {
 			gifski.addFrameRGBA(j, 256, 256, frame, (short)4);
 		}
 		gifski.endAddingFrames();
-		gifski.drop();
 
 		System.out.println("Great success!");
 	}
