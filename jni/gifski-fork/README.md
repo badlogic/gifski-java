@@ -1,5 +1,5 @@
 # Fork notes
-This fork is used by [gifski-java](https://github.com/badlogic/gifski-java) to compile static gifski libraries for 32- and 64-bit Windows & Linux as well as 64-bit macOS. The static libraries are then linked against the gifski-java JNI code.
+This fork is used by [gifski-java](https://github.com/badlogic/gifski-java) to compile static gifski libraries for 32- and 64-bit Windows & Linux as well as 64-bit macOS. The static libraries are then linked against the gifski-java JNI code. The fork is based on commit https://github.com/ImageOptim/gifski/commit/da3022d1c92200ed6b6549c77e278bc005b95b5d
 
 This fork removes the gifski app and only keeps the lib parts. It also removes the dependency on lodepng which does not compile for MinGW targets.
 
