@@ -12,7 +12,7 @@ WORKDIR /code
 ENV IS_DOCKER=true
 
 CMD export PATH=$PATH:$HOME/.cargo/bin && \
-	./build.sh --target=windows-x86 && \
-	./build.sh --target=windows-x86_64 && \
-	./build.sh --target=linux-x86 && \
-	./build.sh --target=linux-x86_64
+	./build.sh --target=windows-x86 --build=release && \
+	./build.sh --target=windows-x86_64 --build=release && \
+	./build.sh --target=linux-x86 --build=release && \
+	./build.sh --target=linux-x86_64 --build=release

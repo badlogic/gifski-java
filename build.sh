@@ -5,6 +5,7 @@ export PATH=$PATH:~/.cargo/bin
 
 BUILD=debug
 CXX=g++
+STRIP=strip
 CXX_FLAGS="-c -Wall"
 LINKER_FLAGS="-shared"
 LIBRARIES="-Ltmp -lm -lgifski"
@@ -72,6 +73,7 @@ if [ "x$TARGET" != 'x' ]; then
         OUTPUT_SUFFIX=".dll"
         if [ "$ARCH" = "x86_64" ]; then
             CXX="x86_64-w64-mingw32-g++"
+            STRIP="x86_64-w64-mingw32-strip"
             RUST_TARGET="x86_64-pc-windows-gnu"
         else
             RUST_TARGET="i686-pc-windows-gnu"
@@ -112,7 +114,8 @@ mkdir -p tmp
 echo "--- Compiling for $TARGET, build type $BUILD"
 echo "------ Compiling Gifski Rust"
 cd jni/gifski-fork
-cargo build --target=$RUST_TARGET
+RUST_BUILD="--$BUILD"
+cargo build --target=$RUST_TARGET $RUST_BUILD
 cp target/$RUST_TARGET/$BUILD/*.a ../../tmp | true
 cp target/$RUST_TARGET/$BUILD/*.lib ../../tmp | true
 cd ../..
@@ -128,8 +131,13 @@ done
 echo "--- Linking"
 LINKER=$CXX
 OBJ_FILES=`find tmp -name *.o`
-echo "$LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o $OUTPUT_DIR$OUTPUT_PREFIX$OUTPUT_NAME$OUTPUT_SUFFIX"
-$LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o "$OUTPUT_DIR$OUTPUT_PREFIX$OUTPUT_NAME$OUTPUT_SUFFIX"
+OUTPUT_FILE="$OUTPUT_DIR$OUTPUT_PREFIX$OUTPUT_NAME$OUTPUT_SUFFIX"
+echo "$LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o $OUTPUT_FILE"
+$LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o "$OUTPUT_FILE"
+if [ "$BUILD" = "release" ]; then
+    echo "Stripping $OUTPUT_FILE"
+    $STRIP "$OUTPUT_FILE"
+fi
 
 echo "--- Clean up"
 rm -rf tmp
