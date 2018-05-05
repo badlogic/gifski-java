@@ -2,9 +2,9 @@
 package com.badlogicgames.gifski;
 
 public class GifskiSettings {
-	int width;
-	int height;
-	byte quality = 100;
-	boolean once = false;
-	boolean fast = false;
+	public int width;
+	public int height;
+	public byte quality = 100;
+	public boolean once = false;
+	public boolean fast = false;
 }
