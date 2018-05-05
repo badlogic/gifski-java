@@ -8,7 +8,7 @@ public class GifskiSettings {
 	public int height;
 	/** The quantization quality. 1-100, but the useful range is 50-100. 100 is recommended. */
 	public byte quality = 100;
-	/** If false, the GIF is not repeated. */
+	/** If true, the GIF is not repeated. */
 	public boolean once;
 	/** If true, the quality is lower but encoding is faster. */
 	public boolean fast;
