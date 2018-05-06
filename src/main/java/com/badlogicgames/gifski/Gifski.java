@@ -33,6 +33,8 @@ public class Gifski {
 
 	/** @param pixels An array with width * height * 4 bytes. The array contents is copied. */
 	public Result addFrameRGBA (int index, int width, int height, byte[] pixels, short delay) {
+		if (pixels.length < width * height * 4)
+			throw new IllegalArgumentException("pixels must have " + width + " * " + height + " * 4 length: " + pixels.length);
 		return result(_addFrameRGBA(handle, index, width, height, pixels, delay));
 	}
 
@@ -51,6 +53,7 @@ public class Gifski {
 
 	/** Waits for frames to be added until {@link #endAddingFrames()} is called. */
 	public Result write (String outputFile) {
+		if (outputFile == null) throw new IllegalArgumentException("outputFile cannot be null.");
 		try {
 			return result(_write(handle, outputFile.getBytes("utf-8")));
 		} catch (UnsupportedEncodingException ex) {
@@ -70,6 +73,7 @@ public class Gifski {
 
 	/** Starts a thread that calls {@link #write(String)} and then {@link #drop()}. */
 	public void start (final String outputFile) {
+		if (outputFile == null) throw new IllegalArgumentException("outputFile cannot be null.");
 		if (writeThread != null) throw new IllegalStateException("Write thread is already running.");
 		writeThread = new Thread("GifskiWrite") {
 			public void run () {
