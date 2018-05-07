@@ -144,6 +144,7 @@ trace $LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o "$OUTPUT_FILE"
 
 if [ "$BUILD" = "release" ]; then
     #$STRIP "$OUTPUT_FILE" 2>/dev/null
+    echo "would strip"
 fi
 echo
 
