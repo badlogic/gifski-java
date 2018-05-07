@@ -4,13 +4,12 @@ set -e
 export PATH=$PATH:~/.cargo/bin
 
 BUILD=debug
-BUILD_DIR="target/"
+BUILD_DIR="target"
 CXX=g++
 STRIP=strip
 CXX_FLAGS="-c -Wall"
 LINKER_FLAGS="-shared"
 LIBRARIES="-L$BUILD_DIR -lm -lgifski"
-BUILD_DIR="target/"
 OUTPUT_DIR="../src/main/resources/"
 OUTPUT_PREFIX="lib"
 OUTPUT_NAME="gifski-java"
@@ -140,6 +139,7 @@ echo "--- Linking & stripping"
 LINKER=$CXX
 OBJ_FILES=`find $BUILD_DIR -name *.o`
 OUTPUT_FILE="$OUTPUT_DIR$OUTPUT_PREFIX$OUTPUT_NAME$OUTPUT_SUFFIX"
+trace pwd
 trace $LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o "$OUTPUT_FILE"
 
 echo

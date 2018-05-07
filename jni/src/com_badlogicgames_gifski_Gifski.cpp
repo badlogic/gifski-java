@@ -1,5 +1,8 @@
 #include "com_badlogicgames_gifski_Gifski.h"
+
+extern "C" {
 #include "gifski.h"
+}
 
 JNIEXPORT jlong JNICALL Java_com_badlogicgames_gifski_Gifski__1newGifski
 (JNIEnv *, jclass, jint width, jint height, jint quality, jboolean once, jboolean fast) {
