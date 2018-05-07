@@ -1,8 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<groupId>org.sonatype.oss</groupId>
 		<artifactId>oss-parent</artifactId>
@@ -11,18 +9,37 @@
 
 	<groupId>com.badlogicgames</groupId>
 	<artifactId>gifski-java</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>jar</packaging>
 
 	<name>gifski-java</name>
 	<url>https://github.com/badlogic/gifski-java</url>
+
+	<issueManagement>
+		<url>https://github.com/badlogic/gifski-java/issues</url>
+	</issueManagement>
+
+	<licenses>
+		<license>
+			<name>AGPL 3.0</name>
+			<url>https://opensource.org/licenses/AGPL-3.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.7</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<additionalparam>-Xdoclint:none</additionalparam>
 	</properties>
+
+	<scm>
+		<connection>scm:git:https://github.com/badlogic/gifski-java.git</connection>
+		<developerConnection>scm:git:https://github.com/badlogic/gifski-java.git</developerConnection>
+		<url>https://github.com/badlogic/gifski-java.git</url>
+	</scm>
 
 	<build>
 		<plugins>
@@ -51,11 +68,12 @@
 							<url>https://libgdx.badlogicgames.com/ci/gifski-java/binaries/gifski-java-binaries.tar.gz</url>
 							<skipCache>true</skipCache>
 							<unpack>true</unpack>
-							<outputDirectory>src/main/resources</outputDirectory>							
+							<outputDirectory>src/main/resources</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
+
 </project>
