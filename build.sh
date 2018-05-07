@@ -4,11 +4,13 @@ set -e
 export PATH=$PATH:~/.cargo/bin
 
 BUILD=debug
+BUILD_DIR="target/jni"
 CXX=g++
 STRIP=strip
 CXX_FLAGS="-c -Wall"
 LINKER_FLAGS="-shared"
-LIBRARIES="-Ltmp -lm -lgifski"
+LIBRARIES="-L$BUILD_DIR -lm -lgifski"
+BUILD_DIR="target/jni"
 OUTPUT_DIR="src/main/resources/"
 OUTPUT_PREFIX="lib"
 OUTPUT_NAME="gifski-java"
@@ -29,6 +31,8 @@ EOF
   exit $1
 }
 
++() { :;} 2> /dev/null; trace() { (PS4=; set -x; "$@";{ set +x; } 2> /dev/null); "$@";}
+
 while [ "${1:0:2}" = '--' ]; do
   NAME=${1%%=*}
   VALUE=${1#*=}
@@ -47,7 +51,7 @@ while [ "${1:0:2}" = '--' ]; do
 done
 
 if [ "x$TARGET" = 'x' ]; then
-    echo "Please specify a target: macosx, linux-x86, linux-x86_64, windows-x86, windows-x86_64"
+    echo "Please specify a target with --target=<target>: macosx, linux-x86, linux-x86_64, windows-x86, windows-x86_64"
     exit 1
 fi
 
@@ -108,36 +112,39 @@ fi
 CXX_SOURCES=`find jni -name *.cpp`
 HEADERS="-Ijni -Ijni/jni-headers -Ijni/jni-headers/${JNI_MD}"
 
-rm -rf tmp
-mkdir -p tmp
+rm -rf $BUILD_DIR 2>/dev/null
+mkdir -p $BUILD_DIR
 
 echo "--- Compiling for $TARGET, build type $BUILD"
 echo "------ Compiling Gifski Rust"
-cd jni/gifski-fork
-RUST_BUILD="--$BUILD"
-cargo build --target=$RUST_TARGET $RUST_BUILD
-cp target/$RUST_TARGET/$BUILD/*.a ../../tmp | true
-cp target/$RUST_TARGET/$BUILD/*.lib ../../tmp | true
-cd ../..
+cd gifski
+if [ "$BUILD" = "release" ]; then
+    RUST_BUILD="--$BUILD"
+fi
+trace cargo build --target=$RUST_TARGET $RUST_BUILD --lib
+cp target/$RUST_TARGET/$BUILD/*.a ../$BUILD_DIR 2>/dev/null | true
+cp target/$RUST_TARGET/$BUILD/*.lib ../$BUILD_DIR 2>/dev/null | true
+cd ..
+echo
 
 
 echo "------ Compiling C++ sources"
-echo $CXX_SOURCES;
 for f in $CXX_SOURCES; do
-   echo "$CXX $CXX_FLAGS $HEADERS -o tmp/`basename $f .c`.o"
-   $CXX $CXX_FLAGS $HEADERS "$f" -o tmp/`basename $f .c`.o
+    OBJECT_FILE=$BUILD_DIR/`basename $f .c`
+    trace $CXX $CXX_FLAGS $HEADERS "$f" -o $OBJECT_FILE.o
 done
+echo
 
-echo "--- Linking"
+echo "--- Linking & stripping"
 LINKER=$CXX
-OBJ_FILES=`find tmp -name *.o`
+OBJ_FILES=`find $BUILD_DIR -name *.o`
 OUTPUT_FILE="$OUTPUT_DIR$OUTPUT_PREFIX$OUTPUT_NAME$OUTPUT_SUFFIX"
-echo "$LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o $OUTPUT_FILE"
-$LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o "$OUTPUT_FILE"
+trace $LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o "$OUTPUT_FILE"
+
 if [ "$BUILD" = "release" ]; then
-    echo "Stripping $OUTPUT_FILE"
-    $STRIP "$OUTPUT_FILE"
+    $STRIP "$OUTPUT_FILE" 2>/dev/null
 fi
+echo
 
 echo "--- Clean up"
 rm -rf tmp
