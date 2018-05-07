@@ -6,5 +6,4 @@ output.gif
 .settings/
 cmake-build-debug/
 .DS_STORE
-tmp/
-jni/gifski-fork/target
+src/main/resources

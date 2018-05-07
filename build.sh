@@ -112,8 +112,9 @@ fi
 CXX_SOURCES=`find jni -name *.cpp`
 HEADERS="-Ijni -Ijni/jni-headers -Ijni/jni-headers/${JNI_MD}"
 
-rm -rf $BUILD_DIR 2>/dev/null
+rm -rf $BUILD_DIR
 mkdir -p $BUILD_DIR
+mkdir -p $OUTPUT_DIR
 
 echo "--- Compiling for $TARGET, build type $BUILD"
 echo "------ Compiling Gifski Rust"
@@ -146,5 +147,4 @@ if [ "$BUILD" = "release" ]; then
 fi
 echo
 
-echo "--- Clean up"
-rm -rf tmp
+rm -rf $BUILD_DIR
