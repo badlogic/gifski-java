@@ -25,7 +25,7 @@ compile "com.badlogicgames.gdx:gifski-java:1.0"
 gifski-java is also build on every new commit by [Jenkins](https://libgdx.badlogicgames.com/jenkins/job/gifski-java/) and published as a [SNAPSHOT release](https://oss.sonatype.org/content/repositories/snapshots/com/badlogicgames/gifski-java/) to SonaType.
 
 ## Usage
-gifski-java follows the Gifski C API closely. The below code generates a fade-in animation of a pink rectangle, with a 2 second duration at 25 frames per second.
+The below code generates a fade-in animation of a pink rectangle, with a 2 second duration at 25 frames per second.
 
 ```java
 // Animation duration and frame rate (frameCount / seconds)
@@ -64,7 +64,7 @@ for (int i = 0; i < frameCount; i++) {
 gifski.end();
 ```
 
-**Note**: gifski-java automatically sets up the [an additional thread](https://github.com/ImageOptim/gifski/blob/master/gifski.h#L11) for writing the added frames to the output file. Calling `Gifski#start()` and `Gifski#end()` which will ensure the proper setup and tear down of the thread.
+**Note**: gifski-java automatically sets up the [ additional thread](https://github.com/ImageOptim/gifski/blob/master/gifski.h#L11) for writing the added frames to the output file. Call `Gifski#start()` and `Gifski#end()` which will ensure the proper setup and tear down of the thread. The Java API allows you to manage the threads manually by exposing the `write()`, `drop()` and `endAddingFrames()` methods, which are direct wrappers of the C API.
 
 Refer to the ['gifski.h`](https://github.com/ImageOptim/gifski/blob/master/gifski.h) file of the C API for more information.
 
