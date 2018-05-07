@@ -1,6 +1,10 @@
 # Compiling Gifski and using it as a static library
 
 ## Windows & Linux
+
+> The easiest way to compile the Windows & Linux binaries is to use the provided Docker image in the root of this repository. This way, no toolchains needs to be installed locally, and no VMs need to be setup. See the README.md file in the root of the repository. See blow on how to compile for Windows & Linux with your host toolchains.
+
+
 To (cross-)compile the static gifski library for Windows and Linux on Ubuntu via Rust:
 1. Install Rust: `curl https://sh.rustup.rs -sSf | sh`
 1. Install MinGW for your system:
@@ -46,7 +50,3 @@ To compiling for macOS:
 	```
 
 The static library will be located in `target/<release|debug>` and will be called `libgifski.a`
-
-## Docker
-The easiest way to compile the Windows & Linux binaries is to use the provided Docker image in the root of this repository. This way, no toolchains needs to be installed locally, and no VMs need to be setup. See the README.md file
-in the root of the repository.
