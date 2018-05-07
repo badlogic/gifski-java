@@ -2,7 +2,7 @@
 
 ## Windows & Linux
 
-> The easiest way to compile the Windows & Linux binaries is to use the provided Docker image in the root of this repository. This way, no toolchains needs to be installed locally, and no VMs need to be setup. See the README.md file in the root of the repository. See blow on how to compile for Windows & Linux with your host toolchains.
+> The easiest way to compile the Windows & Linux binaries is to use the Docker image provided in this repository. This way, no toolchains needs to be installed locally, and no VMs need to be setup. See the README.md file in the root of the repository. See blow on how to compile for Windows & Linux with your host toolchains.
 
 
 To (cross-)compile the static gifski library for Windows and Linux on Ubuntu via Rust:
