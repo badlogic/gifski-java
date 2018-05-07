@@ -2,6 +2,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>5</version>
+	</parent>
 
 	<groupId>com.badlogicgames</groupId>
 	<artifactId>gifski-java</artifactId>
@@ -36,16 +42,15 @@
 				<version>1.4.0</version>
 				<executions>
 					<execution>
-						<id>install-jbpm</id>
-						<phase>pre-integration-test</phase>
+						<id>install-binaries</id>
+						<phase>generate-resources</phase>
 						<goals>
 							<goal>wget</goal>
 						</goals>
 						<configuration>
-							<url>http://downloads.sourceforge.net/project/jbpm/jBPM%203/jbpm-3.1.4/jbpm-3.1.4.zip</url>
+							<url>https://libgdx.badlogicgames.com/ci/gifski-java/binaries/gifski-java-binaries.tar.gz</url>
 							<unpack>true</unpack>
-							<outputDirectory>${project.build.directory}/jbpm-3.1.4</outputDirectory>
-							<md5>df65b5642f33676313ebe4d5b69a3fff</md5>
+							<outputDirectory>src/main/resources</outputDirectory>							
 						</configuration>
 					</execution>
 				</executions>
