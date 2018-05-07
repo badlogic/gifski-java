@@ -49,6 +49,7 @@
 						</goals>
 						<configuration>
 							<url>https://libgdx.badlogicgames.com/ci/gifski-java/binaries/gifski-java-binaries.tar.gz</url>
+							<skipCache>true</skipCache>
 							<unpack>true</unpack>
 							<outputDirectory>src/main/resources</outputDirectory>							
 						</configuration>

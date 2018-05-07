@@ -4,14 +4,14 @@ set -e
 export PATH=$PATH:~/.cargo/bin
 
 BUILD=debug
-BUILD_DIR="target/jni"
+BUILD_DIR="target/"
 CXX=g++
 STRIP=strip
 CXX_FLAGS="-c -Wall"
 LINKER_FLAGS="-shared"
 LIBRARIES="-L$BUILD_DIR -lm -lgifski"
-BUILD_DIR="target/jni"
-OUTPUT_DIR="src/main/resources/"
+BUILD_DIR="target/"
+OUTPUT_DIR="../src/main/resources/"
 OUTPUT_PREFIX="lib"
 OUTPUT_NAME="gifski-java"
 OUTPUT_SUFFIX=".so"
@@ -109,8 +109,8 @@ if [ "x$TARGET" != 'x' ]; then
 fi
 
 
-CXX_SOURCES=`find jni -name *.cpp`
-HEADERS="-Ijni -Ijni/jni-headers -Ijni/jni-headers/${JNI_MD}"
+CXX_SOURCES=`find src -name *.cpp`
+HEADERS="-I./ -Ijni-headers -Ijni-headers/${JNI_MD} -Igifski/"
 
 rm -rf $BUILD_DIR
 mkdir -p $BUILD_DIR

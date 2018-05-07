@@ -7,7 +7,7 @@ To (cross-)compile the static gifski library for Windows and Linux on Ubuntu via
 	```
 	sudo apt-get update && sudo apt-get install gcc g++ gcc-multilib g++-multilib mingw-w64 lib32z1
 	```
-1. Create the file `~/.cargo/config` and specify the location of the MinGW `gcc` binary for the two Windows targets. This is used by Rust as the linker. Note that the paths are for Ubuntu. On macOS it's in `/usr/local/bin/` when installing MinGW via brew. Use `which x86_64-w64-mingw32-gcc` to locate the path.
+1. Create the file `<project-dir>/.cargo/config` and specify the location of the MinGW `gcc` binary for the two Windows targets. This is used by Rust as the linker. Note that the paths are for Ubuntu. On macOS it's in `/usr/local/bin/` when installing MinGW via brew. Use `which x86_64-w64-mingw32-gcc` to locate the path.
 
 	```
 	[target.x86_64-pc-windows-gnu]
@@ -15,7 +15,6 @@ To (cross-)compile the static gifski library for Windows and Linux on Ubuntu via
 
 	[target.i686-pc-windows-gnu]
 	linker = "/usr/bin/i686-w64-mingw32-gcc"
-	rustflags = "-C panic=abort"
 	```
 1. Add the platform targets via
 	```
