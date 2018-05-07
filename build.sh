@@ -142,10 +142,6 @@ OBJ_FILES=`find $BUILD_DIR -name *.o`
 OUTPUT_FILE="$OUTPUT_DIR$OUTPUT_PREFIX$OUTPUT_NAME$OUTPUT_SUFFIX"
 trace $LINKER $OBJ_FILES $LIBRARIES $LINKER_FLAGS -o "$OUTPUT_FILE"
 
-if [ "$BUILD" = "release" ]; then
-    #$STRIP "$OUTPUT_FILE" 2>/dev/null
-    echo "would strip"
-fi
 echo
 
 rm -rf $BUILD_DIR
