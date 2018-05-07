@@ -7,7 +7,7 @@ RUN apt-get update && apt-get -y install curl gcc g++ gcc-multilib g++-multilib 
 	rustup target add x86_64-pc-windows-gnu && \
 	rustup target add i686-unknown-linux-gnu
 
-WORKDIR /code
+WORKDIR /code/jni
 CMD export PATH=$PATH:$HOME/.cargo/bin && \
 	./build.sh --target=windows-x86 --build=release && \
 	./build.sh --target=windows-x86_64 --build=release && \
